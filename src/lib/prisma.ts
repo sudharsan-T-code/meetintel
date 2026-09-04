@@ -7,9 +7,18 @@ const globalForPrisma = globalThis as unknown as {
   lastDbProbe?: number;
 };
 
+const fallbackUrl =
+  process.env.DATABASE_URL ||
+  'postgresql://postgres:postgres@localhost:5432/meetintel?schema=public';
+
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
+    datasources: {
+      db: {
+        url: fallbackUrl,
+      },
+    },
     log: ['error'],
   });
 

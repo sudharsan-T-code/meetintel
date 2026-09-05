@@ -4,7 +4,23 @@
 
 // ---- Organization & Users ----
 
-export type UserRole = 'employee' | 'manager' | 'meeting_organizer' | 'hr' | 'admin' | 'super_admin';
+export type CanonicalUserRole =
+  | 'SUPER_ADMIN'
+  | 'ADMIN'
+  | 'HR'
+  | 'MANAGER'
+  | 'MEETING_ORGANIZER'
+  | 'EMPLOYEE';
+
+export type LegacyUserRole =
+  | 'employee'
+  | 'manager'
+  | 'meeting_organizer'
+  | 'hr'
+  | 'admin'
+  | 'super_admin';
+
+export type UserRole = CanonicalUserRole | LegacyUserRole;
 
 export interface Organization {
   id: string;

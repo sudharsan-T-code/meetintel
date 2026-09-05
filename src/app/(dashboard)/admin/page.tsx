@@ -18,6 +18,7 @@ import {
   Clock,
   KeyRound,
 } from 'lucide-react';
+import { useAuth } from '@/lib/auth/AuthContext';
 
 interface OverviewData {
   organization: {
@@ -61,9 +62,11 @@ interface OverviewData {
 }
 
 export default function AdminOverviewPage() {
+  const { user, roleLabel, switchPersona } = useAuth();
   const [data, setData] = useState<OverviewData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [switching, setSwitching] = useState(false);
 
   const fetchOverview = async () => {
     setLoading(true);
@@ -82,9 +85,19 @@ export default function AdminOverviewPage() {
     }
   };
 
+  const handleSwitchToAdmin = async () => {
+    setSwitching(true);
+    try {
+      await switchPersona('admin');
+      await fetchOverview();
+    } finally {
+      setSwitching(false);
+    }
+  };
+
   useEffect(() => {
     fetchOverview();
-  }, []);
+  }, [user]);
 
   if (loading) {
     return (
@@ -101,14 +114,33 @@ export default function AdminOverviewPage() {
 
   if (error) {
     return (
-      <div style={{ padding: '40px', maxWidth: 800, margin: '0 auto' }}>
-        <div className="card" style={{ padding: 32, textAlign: 'center' }}>
-          <AlertTriangle size={40} style={{ color: 'var(--color-danger, #ef4444)', margin: '0 auto 16px' }} />
-          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Administration Access</h2>
-          <p style={{ color: 'var(--text-secondary, #94a3b8)', marginBottom: 20 }}>{error}</p>
-          <button onClick={fetchOverview} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <RefreshCw size={16} /> Retry
-          </button>
+      <div style={{ padding: '40px', maxWidth: 700, margin: '40px auto' }}>
+        <div className="card" style={{ padding: 40, textAlign: 'center', backgroundColor: '#0f172a', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+          <AlertTriangle size={48} style={{ color: 'var(--color-danger, #ef4444)', margin: '0 auto 20px' }} />
+          <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8, color: '#ffffff' }}>Administration Access</h2>
+          <p style={{ color: 'var(--text-secondary, #94a3b8)', marginBottom: 16, fontSize: 14 }}>{error}</p>
+
+          <div style={{ margin: '20px 0', padding: '12px 16px', backgroundColor: 'rgba(255, 255, 255, 0.04)', borderRadius: 8, display: 'inline-block' }}>
+            <span style={{ color: '#94a3b8', fontSize: 12 }}>Current Active Identity: </span>
+            <strong style={{ color: '#ffffff', fontSize: 13 }}>{user?.name || 'Priya Sharma'}</strong>
+            <span style={{ margin: '0 8px', color: '#64748b' }}>•</span>
+            <span className="badge badge-secondary" style={{ fontSize: 11 }}>{roleLabel}</span>
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 16, flexWrap: 'wrap' }}>
+            <button
+              onClick={handleSwitchToAdmin}
+              disabled={switching}
+              className="btn btn-primary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+            >
+              <RefreshCw size={16} className={switching ? 'animate-spin' : ''} />
+              Switch to Enterprise Admin (Rajesh Kumar)
+            </button>
+            <Link href="/dashboard" className="btn btn-secondary">
+              Back to Dashboard
+            </Link>
+          </div>
         </div>
       </div>
     );

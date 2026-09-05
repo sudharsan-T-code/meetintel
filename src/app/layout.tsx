@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   keywords: ["meeting intelligence", "AI", "productivity", "enterprise", "meeting analytics", "voice box"],
 };
 
+import { AuthProvider } from "@/lib/auth/AuthContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -19,7 +21,9 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

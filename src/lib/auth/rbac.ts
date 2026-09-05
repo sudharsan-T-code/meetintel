@@ -89,6 +89,43 @@ export const ALL_ROLES: UserRole[] = [
   'EMPLOYEE',
 ];
 
+/**
+ * Normalizes any string or legacy role representation to canonical uppercase UserRole.
+ */
+export function normalizeRole(role?: string | null): UserRole {
+  if (!role) return 'EMPLOYEE';
+  const clean = role.trim().toUpperCase().replace(/[\s-]+/g, '_');
+  if (clean === 'ENTERPRISE_ADMIN' || clean === 'SYSTEM_ADMINISTRATOR' || clean === 'ADMINISTRATOR') {
+    return 'ADMIN';
+  }
+  if (ALL_ROLES.includes(clean as UserRole)) {
+    return clean as UserRole;
+  }
+  return 'EMPLOYEE';
+}
+
+/**
+ * Returns a human-readable display label for a role.
+ */
+export function getRoleDisplayLabel(role?: string | null): string {
+  const norm = normalizeRole(role);
+  switch (norm) {
+    case 'SUPER_ADMIN':
+      return 'Super Administrator';
+    case 'ADMIN':
+      return 'Enterprise Admin';
+    case 'HR':
+      return 'People & HR';
+    case 'MANAGER':
+      return 'Engineering Manager';
+    case 'MEETING_ORGANIZER':
+      return 'Meeting Organizer';
+    case 'EMPLOYEE':
+    default:
+      return 'Team Member';
+  }
+}
+
 const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   SUPER_ADMIN: [
     'org:manage_settings', 'org:manage_users', 'org:manage_integrations', 'org:view_audit_logs', 'org:manage_billing',
@@ -335,7 +372,7 @@ export const PERMISSION_CATEGORIES: PermissionCategory[] = [
  * Checks if a specific role possesses a particular permission.
  */
 export function hasPermission(role: string, permission: Permission): boolean {
-  const normalizedRole = role.toUpperCase().replace('-', '_') as UserRole;
+  const normalizedRole = normalizeRole(role);
   const permissions = ROLE_PERMISSIONS[normalizedRole];
   return Boolean(permissions && permissions.includes(permission));
 }
@@ -344,9 +381,9 @@ export function hasPermission(role: string, permission: Permission): boolean {
  * Checks if a role satisfies a minimum hierarchy rank.
  */
 export function hasMinimumRole(userRole: string, minimumRole: UserRole): boolean {
-  const normalizedUserRole = userRole.toUpperCase().replace('-', '_') as UserRole;
+  const normalizedUserRole = normalizeRole(userRole);
   const userRank = ROLE_HIERARCHY[normalizedUserRole] ?? 0;
-  const targetRank = ROLE_HIERARCHY[minimumRole] ?? 0;
+  const targetRank = ROLE_HIERARCHY[normalizeRole(minimumRole)] ?? 0;
   return userRank >= targetRank;
 }
 
